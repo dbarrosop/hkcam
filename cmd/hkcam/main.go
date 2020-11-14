@@ -6,11 +6,13 @@ import (
 	"github.com/brutella/hc"
 	"github.com/brutella/hc/accessory"
 	"github.com/brutella/hc/log"
+	"github.com/brutella/hc/service"
 
 	"image"
 	"runtime"
 
 	"github.com/brutella/hkcam"
+	"github.com/brutella/hkcam/cams/dlink"
 	"github.com/brutella/hkcam/ffmpeg"
 )
 
@@ -22,6 +24,9 @@ func main() {
 	var loopbackFilename *string
 	var h264Encoder *string
 	var h264Decoder *string
+	var camURL *string
+	var camUser *string
+	var camPassword *string
 
 	if runtime.GOOS == "linux" {
 		inputDevice = flag.String("input_device", "v4l2", "video input device")
@@ -36,6 +41,10 @@ func main() {
 		loopbackFilename = flag.String("loopback_filename", "", "video loopback device filename")
 		h264Decoder = flag.String("h264_decoder", "", "h264 video decoder")
 		h264Encoder = flag.String("h264_encoder", "libx264", "h264 video encoder")
+
+		camURL = flag.String("cam-url", "", "URL to use when interacting with cam's API'")
+		camUser = flag.String("cam-user", "", "Username to use when interacting with cam's API'")
+		camPassword = flag.String("cam-passwd", "", "Password to use when interacting with cam's API'")
 	} else {
 		log.Info.Fatalf("%s platform is not supported", runtime.GOOS)
 	}
@@ -66,6 +75,16 @@ func main() {
 		MinVideoBitrate:  *minVideoBitrate,
 		MultiStream:      *multiStream,
 	}
+
+	motionSensor := service.NewMotionSensor()
+	cam.AddService(motionSensor.Service)
+
+	camera := dlink.New(*camURL, *camUser, *camPassword)
+	go func() {
+		if err := camera.Monitor(motionSensor); err != nil {
+			log.Info.Panic(err)
+		}
+	}()
 
 	ffmpeg := hkcam.SetupFFMPEGStreaming(cam, cfg)
 
