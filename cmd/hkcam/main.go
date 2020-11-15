@@ -42,12 +42,13 @@ func main() {
 		h264Decoder = flag.String("h264_decoder", "", "h264 video decoder")
 		h264Encoder = flag.String("h264_encoder", "libx264", "h264 video encoder")
 
-		camURL = flag.String("cam-url", "", "URL to use when interacting with cam's API'")
-		camUser = flag.String("cam-user", "", "Username to use when interacting with cam's API'")
-		camPassword = flag.String("cam-passwd", "", "Password to use when interacting with cam's API'")
 	} else {
 		log.Info.Fatalf("%s platform is not supported", runtime.GOOS)
 	}
+
+	camURL = flag.String("cam-url", "", "URL to use when interacting with cam's API'")
+	camUser = flag.String("cam-user", "", "Username to use when interacting with cam's API'")
+	camPassword = flag.String("cam-passwd", "", "Password to use when interacting with cam's API'")
 
 	var minVideoBitrate *int = flag.Int("min_video_bitrate", 0, "minimum video bit rate in kbps")
 	var multiStream *bool = flag.Bool("multi_stream", false, "Allow mutliple clients to view the stream simultaneously")
